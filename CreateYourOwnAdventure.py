@@ -16,28 +16,13 @@ class Space:
 		self.type = spaceType
 
 class Grid:
-	def __init__(self):
-		self.grid = {
-			0:{   #x
-				0:{
-					0:None
-				}    #y
-			}
-		}
-	def addSpace(x,y,z,space):
-		self.grid[x][y][z] = space
-
-class Game():
-	def __init__(self):
-
-		startSpace = Space("room")
-		self.grid = Grid()
-		self.grid.addSpace
+	def __init__(self,x,y,z):
 		self.currentLocation = {
-			"x":0
-			"y":0
-			"z":0
+			"x":x,
+			"y":y,
+			"z":z,
 		}
+		
 		self.worldBounds = {
 			"x-up":None,
 			"x-down":0,
@@ -47,21 +32,41 @@ class Game():
 			"z-down":0,
 		}
 
+		self.grid = {
+			0:{   #x
+				0:{
+					0:None
+				}    #y
+			}
+		}
+	def addSpace(self, x,y,z,space):
+		self.grid[x][y][z] = space
+
+class Game():
+	def __init__(self):
+
+		startSpace = Space("room")
+		self.grid = Grid(0,0,0)
+		self.grid.addSpace(0,0,0, startSpace)
+
+		self.actionMap = {
+			"up":incrementPosUp,
+			"down",incrementPosDown, 
+			"describe":
+		}
 
 	def start(self):
-		input("You find yourself in an empty room, what would you like to do?")
+		command = "You find yourself in an empty room, what would you like to do?"
+		while True:
+			
+			command = self.parse(input(command + " "))
 
 
 	def parse(self, command):
+		pass
 
 
 
-actionMap = {
-	"up":incrementPosUp,
-	"down",incrementPosDown, 
-	"describe":
 
-
-}
 if __name__ == '__main__':
 	main()
