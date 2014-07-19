@@ -39,12 +39,44 @@ def main():
 	else:
 		print("Fine, this game doesnt need you anyway")
 
+class Item:
+	def __init__(self, itemType, description = None):
+		 self.type = itemType
+		 self.description = description
+
+class Mob:
+	def __init__(self, mobType, attack = None, defence = None):
+		self.type =  mobType
+		self.attack = attack
+		self.defence = defence
+		self.items = []
 
 class Space:
 	def __init__(self, spaceType):
 		self.type = spaceType
+		self.mobs = []
+		self.items = []
 	def __unicode__(self):
-		return "Space object of type "+ self.type  
+		return "Space object of type "+ self.type
+
+	def addMob(self, mob):
+		self.mobs.append(mob)
+
+	def removeMob(self, mob):
+		self.mobs.remove(mob)
+
+	def returnMobs(self):
+		return self.mobs
+
+	def addItem(self, item):
+		self.items.append(item)
+
+	def removeItem(self, item):
+		self.items.append(item)
+
+	def returnItems(self):
+		return self.items
+
 
 class Grid:
 	def __init__(self,x,y,z):
@@ -55,10 +87,10 @@ class Grid:
 		}
 		
 		self.worldBounds = {
-			"x-up":9999,  #Make none in future
-			"x-down":0,
+			"x-up":9999,  
+			"x-down":-9999,
 			"y-up":9999,
-			"y-down":0,
+			"y-down":-9999,
 			"z-up":0,
 			"z-down":0,
 		}
@@ -66,15 +98,33 @@ class Grid:
 		self.grid = {
 			0:{   #x
 				0:{
-					0:None
+					0:Space("filler")
 				}    #y
 			}
 		}
-		self.populateMap()
 
 	#Populates the map based on the programers configuration list.
-	def populateMap(self):
-		print("STUB")
+	def loadMap(self, mapConfig):
+		
+		for space in mapConfig["spaces"]:
+			try:
+				spaceObject = Space(space["type"])
+			except KeyError:
+				continue
+
+			for item in space["items"]:
+				itemObject = Item(item["type"])
+				spaceObject.addItem(itemObject)
+
+			for mob in space["mobs"]:
+				mobObject = Mob(mob["type"])
+				spaceObject.addMob(mobObject)
+
+
+			self.ensureGridPossition(x=space["x"] ,y=space["y"],z =space["z"])
+			self.createRoom(x=space["x"] ,y=space["y"],z =space["z"] ,
+				spaceObject = spaceObject, verbose = False)
+
 
 	def addSpace(self, x,y,z,space):
 		self.insertAtPostition(x = x, y = y, z = z, spaceObject = space)
@@ -85,14 +135,10 @@ class Grid:
 			if not self.checkBounds():
 				self.currentLocation["x"] -= 1
 				print("Can't move in that direction. Sorry.")
-
 			
-
-			spaceObject = Space("mountan")
+			print(self.currentLocation)
 			self.insertAtPostition(x = self.currentLocation["x"],
-				y = self.currentLocation["y"], z = self.currentLocation["z"], 
-				spaceObject = spaceObject)
-
+				y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 
 	def incrementXPosDown(self,param):
@@ -101,10 +147,8 @@ class Grid:
 			self.currentLocation["x"] += 1
 			print("Can't move in that direction. Sorry.")
 
-		spaceObject = Space("mountan")
 		self.insertAtPostition(x = self.currentLocation["x"],
-			y = self.currentLocation["y"], z = self.currentLocation["z"], 
-			spaceObject = spaceObject)
+			y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 
 	def incrementYPosUp(self,param):
@@ -113,10 +157,8 @@ class Grid:
 			self.currentLocation["y"] -= 1
 			print("Can't move in that direction. Sorry.")
 
-		spaceObject = Space("mountan")
 		self.insertAtPostition(x = self.currentLocation["x"],
-			y = self.currentLocation["y"], z = self.currentLocation["z"], 
-			spaceObject = spaceObject)
+			y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 	def incrementYPosDown(self,param):
 		self.currentLocation["y"] -= 1
@@ -124,10 +166,8 @@ class Grid:
 			self.currentLocation["y"] += 1
 			print("Can't move in that direction. Sorry.")
 
-		spaceObject = Space("mountan")
 		self.insertAtPostition(x = self.currentLocation["x"],
-			y = self.currentLocation["y"], z = self.currentLocation["z"], 
-			spaceObject = spaceObject)
+			y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 	def incrementZPosUp(self,param):
 		self.currentLocation["z"] += 1
@@ -135,10 +175,8 @@ class Grid:
 			self.currentLocation["z"] -= 1
 			print("Can't move in that direction. Sorry.")
 
-		spaceObject = Space("mountan")
 		self.insertAtPostition(x = self.currentLocation["x"],
-			y = self.currentLocation["y"], z = self.currentLocation["z"], 
-			spaceObject = spaceObject)
+			y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 	def incrementZPosDown(self,param):
 		self.currentLocation["z"] -= 1
@@ -146,10 +184,8 @@ class Grid:
 			self.currentLocation["z"] += 1
 			print("Can't move in that direction. Sorry.")
 
-		spaceObject = Space("mountan")
 		self.insertAtPostition(x = self.currentLocation["x"],
-			y = self.currentLocation["y"], z = self.currentLocation["z"], 
-			spaceObject = spaceObject)
+			y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 	def checkBounds(self):
 
@@ -163,25 +199,64 @@ class Grid:
 		else:
 			return False
 
-	def insertAtPostition(self, x, y,z, spaceObject):
+	#This only insures cordinants exist within the grid, it does
+	#not create a new space.
+	def ensureGridPossition(self,x,y,z):
 		if x not in self.grid:
 			self.grid[x] = {}
 		if y not in self.grid[x]:
 			self.grid[x][y] = {}
 		if z not in self.grid[x][y]:
-			self.grid[x][y][z] = spaceObject
-			print("New Object Created")
+			self.grid[x][y][z] = None
+
+	def insertAtPostition(self, x, y,z, spaceObject=None):
+		if x not in self.grid:
+			self.grid[x] = {}
+		if y not in self.grid[x]:
+			self.grid[x][y] = {}
+		if z not in self.grid[x][y]:
+			self.createRoom(z,y,z, spaceObject)
+		
+		# print(self.grid)
+	def createRoom(self, x,y,z, spaceObject =None, verbose=True):
+		if spaceObject == None:
+			spaceObject = Space("mountan")
+		
+		if verbose:
+			print("You have wondered into a brand new space")
+
+		self.grid[x][y][z] = spaceObject
+		print("object created at", x, y, z)
 
 	def getCurrentSpaceObject(self):
 		x = self.currentLocation["x"]
 		y = self.currentLocation["y"]
 		z = self.currentLocation["z"]
+		# print (x,y,z)
+		print(self.grid[x])
 		return self.grid[x][y][z]
 
 	def describeLocation(self, param):
+
 		print("At location of type "+ self.getCurrentSpaceObject().type +
 				" at coordinants: " + str(self.currentLocation) )
+		curSpace = self.getCurrentSpaceObject()
+		print("This area has " + str(len(curSpace.items)) +" items and " +str(len(curSpace.mobs)) +
+			" creatures")
+	def describeItems(self, param):
+		curSpace = self.getCurrentSpaceObject()
+		print(str(len(curSpace.items)) + " item(s)")
+		i = 1
+		for item in curSpace.items:
+			print("Item #" + str(i)+":")
+			print("Item type: " + item.type)
+			if item.description:
+				print("Item description: ")
 
+			i+=1
+
+	def describeMobs(self, param):
+		print("Not today. Im a STUB")
 
 class Param():
 	def __init__(self, args=None):
@@ -194,18 +269,18 @@ class Game():
 		self.grid = Grid(0,0,0)
 		self.grid.addSpace(0,0,0, startSpace)
 		self.config = Config(game=self, grid=self.grid)
-
-
+		self.grid.loadMap(self.config.game1)
+		print(self.grid.grid)
 	def start(self):
 		print("You find yourself in an empty room, what would you like to do? ")
 		loop = True
 		while loop:
 
-			loop = self.parseExperimental(commandString = input(), commandDict = self.config.mainActionMap )
+			loop = self.parse(commandString = input(), commandDict = self.config.mainActionMap )
 
 
 
-	def parseExperimental(self, commandString, commandDict):
+	def parse(self, commandString, commandDict):
 		
 		#Add the local options to the globaly available options
 		commandDictTemp = self.config.globalActionMap.copy()
@@ -224,60 +299,32 @@ class Game():
 
 			if isinstance(commandDict, types.MethodType):
 				paramObj = Param(args=commandList[i:]) 
-				commandDict( param = paramObj )
-				break
-
-
-			i += 1
-
-		return True
-
-
-	def parse(self, commandString):
-		commandList = commandString.split(" ")
-
-		i = 0
-		while i < len(commandList):
-			word = commandList[i]
-
-			if word.lower() == "go" or word.lower() == "move" or word.lower() == "travel":
-				i += 1
-				word = commandList[i].lower()
-				if word == "south":
-					self.actionMap["move"]["x-up"]()
-				elif word == "north":
-					self.actionMap["move"]["x-down"]()
-				elif word == "east":
-					self.actionMap["move"]["y-up"]()
-				elif word == "west":
-					self.actionMap["move"]["y-down"]()
-				elif word == "up":
-					self.actionMap["move"]["z-up"]()
-				elif word == "down":
-					self.actionMap["move"]["z-down"]()
-				else:
-					print("Go " + word +"? Nah.")
-
-			if word.lower() == "describe":
-				i += 1
-				# print(i, commandList )
-				word = commandList[i].lower()
-
-				if word == "location":
-					self.actionMap["describe"]["location"]()
-
-
-			if word.lower() == "exit()" and len(commandList) == 1:
-				if input("Are you sure? There is currently no save feature. ")[:1].lower() == "y":
+				if commandDict( param = paramObj ) == False:
 					return False
+				else:
+					return True
+
 
 			i += 1
+
+		if "onFail" in commandDict:
+			commandDict = commandDict["onFail"]
+			if "message" in commandDict:
+				print(commandDict["message"])
+			if "function" in commandDict:
+				commandDict = commandDict["function"]
+				if commandDict:
+					paramObj = Param(args = commandList)
+					commandDict(param = paramObj)
+		else:
+			print("No")
+
 		return True
 
-
-
-
-
+	def exitGame(self, param):
+		if input("Are you sure? There is currently no save feature. ")[:1].lower() == "y":
+	 		return False
+			
 
 
 if __name__ == '__main__':
