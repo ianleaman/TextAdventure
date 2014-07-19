@@ -1,4 +1,33 @@
+'''
+Instructions:
 
+The game runs based on the configuration dictionaries defined bellow. Each 
+configuration dictionary defines a function to perform in the game. The configuration
+dictionaries are interpreted by the parser which then runs their corisponding function. 
+
+The world is event based, so if you can call a function that has its own command loop.
+'''
+
+'''
+Each configuration dictionary can contain synonyms, for example move, go, travel.
+'''
+
+import types
+
+from config import Config
+
+
+# experimentDict = {
+# 	"synonyms":{
+# 		"describe":experimentDict["actions"]["describe"],
+# 		"narrate":experimentDict["actions"]["describe"],
+# 	},
+# 	"actions":{
+# 		"describe":{
+# 			"location":self.grid.describeLocation,
+# 		},
+# 	},
+# }
 
 def main():
 	answer = input("Welcome to create your own text adventure. Are you ready to get started? ")
@@ -41,10 +70,16 @@ class Grid:
 				}    #y
 			}
 		}
-	def addSpace(self, x,y,z,space):
-		self.grid[x][y][z] = space
+		self.populateMap()
 
-	def incrementXPosUp(self):
+	#Populates the map based on the programers configuration list.
+	def populateMap(self):
+		print("STUB")
+
+	def addSpace(self, x,y,z,space):
+		self.insertAtPostition(x = x, y = y, z = z, spaceObject = space)
+
+	def incrementXPosUp(self,param):
 
 			self.currentLocation["x"] += 1
 			if not self.checkBounds():
@@ -60,7 +95,7 @@ class Grid:
 
 
 
-	def incrementXPosDown(self):
+	def incrementXPosDown(self,param):
 		self.currentLocation["x"] -= 1
 		if not self.checkBounds():
 			self.currentLocation["x"] += 1
@@ -72,7 +107,7 @@ class Grid:
 			spaceObject = spaceObject)
 
 
-	def incrementYPosUp(self):
+	def incrementYPosUp(self,param):
 		self.currentLocation["y"] += 1
 		if not self.checkBounds():
 			self.currentLocation["y"] -= 1
@@ -83,7 +118,7 @@ class Grid:
 			y = self.currentLocation["y"], z = self.currentLocation["z"], 
 			spaceObject = spaceObject)
 
-	def incrementYPosDown(self):
+	def incrementYPosDown(self,param):
 		self.currentLocation["y"] -= 1
 		if not self.checkBounds():
 			self.currentLocation["y"] += 1
@@ -94,7 +129,7 @@ class Grid:
 			y = self.currentLocation["y"], z = self.currentLocation["z"], 
 			spaceObject = spaceObject)
 
-	def incrementZPosUp(self):
+	def incrementZPosUp(self,param):
 		self.currentLocation["z"] += 1
 		if not self.checkBounds():
 			self.currentLocation["z"] -= 1
@@ -105,7 +140,7 @@ class Grid:
 			y = self.currentLocation["y"], z = self.currentLocation["z"], 
 			spaceObject = spaceObject)
 
-	def incrementZPosDown(self):
+	def incrementZPosDown(self,param):
 		self.currentLocation["z"] -= 1
 		if not self.checkBounds():
 			self.currentLocation["z"] += 1
@@ -118,7 +153,6 @@ class Grid:
 
 	def checkBounds(self):
 
-		
 		if ((self.currentLocation["x"] <= self.worldBounds["x-up"]) and (
 			self.currentLocation["x"] >= self.worldBounds["x-down"]) and 
 			((self.currentLocation["y"] <= self.worldBounds["y-up"]) and (
@@ -144,10 +178,14 @@ class Grid:
 		z = self.currentLocation["z"]
 		return self.grid[x][y][z]
 
-	def describeLocation(self):
+	def describeLocation(self, param):
 		print("At location of type "+ self.getCurrentSpaceObject().type +
 				" at coordinants: " + str(self.currentLocation) )
 
+
+class Param():
+	def __init__(self, args=None):
+		self.args = args
 
 class Game():
 	def __init__(self):
@@ -155,27 +193,44 @@ class Game():
 		startSpace = Space("room")
 		self.grid = Grid(0,0,0)
 		self.grid.addSpace(0,0,0, startSpace)
+		self.config = Config(game=self, grid=self.grid)
 
-		self.actionMap = {
-			"move":{
-				"x-up":self.grid.incrementXPosUp,
-				"x-down":self.grid.incrementXPosDown,
-				"y-up":self.grid.incrementYPosUp,
-				"y-down":self.grid.incrementYPosDown,
-				"z-up":self.grid.incrementZPosUp,
-				"z-down":self.grid.incrementZPosDown,
-			},
-			"describe":{
-				"location":self.grid.describeLocation,
-			}
-		}
 
 	def start(self):
-		command = "You find yourself in an empty room, what would you like to do?"
+		print("You find yourself in an empty room, what would you like to do? ")
 		loop = True
 		while loop:
 
-			loop = self.parse(input(command + " "))
+			loop = self.parseExperimental(commandString = input(), commandDict = self.config.mainActionMap )
+
+
+
+	def parseExperimental(self, commandString, commandDict):
+		
+		#Add the local options to the globaly available options
+		commandDictTemp = self.config.globalActionMap.copy()
+		commandDictTemp.update(commandDict)
+		commandDict = commandDictTemp
+
+
+		commandList = commandString.split(" ")
+
+		i = 0
+		while i < len(commandList):
+			word = commandList[i].lower()
+			
+			if word in commandDict:
+				commandDict = commandDict[word]
+
+			if isinstance(commandDict, types.MethodType):
+				paramObj = Param(args=commandList[i:]) 
+				commandDict( param = paramObj )
+				break
+
+
+			i += 1
+
+		return True
 
 
 	def parse(self, commandString):
