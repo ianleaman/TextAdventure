@@ -28,6 +28,7 @@ class Config:
 				"west":self.grid.incrementYPosDown,  #y-down
 				"up":self.grid.incrementZPosUp,      #z-up
 				"down":self.grid.incrementZPosDown,   #z-down
+				"help":"Wll this is an unhelful help message",
 				"onFail":{
 					"message":"You cant move in that direction",
 				},
@@ -38,6 +39,7 @@ class Config:
 				"ls":"",
 				"rm":"",
 				"system":"",
+				"teleport":self.grid.transport #More descrption in function
 			},
 			"ls":describeConfig,
 			"exit":self.game.exitGame,
@@ -124,7 +126,7 @@ class Config:
 					],
 					"mobs":[
 					{
-						"type":"Little Boss",
+						"type":"Minor Boss",
 						"attack":10,
 						"health":10,
 						"description":("All those tremble when looking upon this "

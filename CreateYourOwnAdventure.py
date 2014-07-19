@@ -136,8 +136,8 @@ class Grid:
 				self.currentLocation["x"] -= 1
 				print("Can't move in that direction. Sorry.")
 			
-			print(self.currentLocation)
-			self.insertAtPostition(x = self.currentLocation["x"],
+			x = self.currentLocation["x"]
+			self.insertAtPostition(x = x,
 				y = self.currentLocation["y"], z = self.currentLocation["z"])
 
 
@@ -215,7 +215,7 @@ class Grid:
 		if y not in self.grid[x]:
 			self.grid[x][y] = {}
 		if z not in self.grid[x][y]:
-			self.createRoom(z,y,z, spaceObject)
+			self.createRoom(x,y,z, spaceObject)
 		
 		# print(self.grid)
 	def createRoom(self, x,y,z, spaceObject =None, verbose=True):
@@ -226,14 +226,11 @@ class Grid:
 			print("You have wondered into a brand new space")
 
 		self.grid[x][y][z] = spaceObject
-		print("object created at", x, y, z)
 
 	def getCurrentSpaceObject(self):
 		x = self.currentLocation["x"]
 		y = self.currentLocation["y"]
 		z = self.currentLocation["z"]
-		# print (x,y,z)
-		print(self.grid[x])
 		return self.grid[x][y][z]
 
 	def describeLocation(self, param):
@@ -258,6 +255,15 @@ class Grid:
 	def describeMobs(self, param):
 		print("Not today. Im a STUB")
 
+	#Accepts arguments as x:coord, y:coord, or z:coor
+	def transport(self, param):
+		for opt in param.args:
+			opt = opt.split(":")
+			self.currentLocation[opt[0]] = opt[1]
+
+		if checkBounds():
+			
+
 class Param():
 	def __init__(self, args=None):
 		self.args = args
@@ -270,7 +276,6 @@ class Game():
 		self.grid.addSpace(0,0,0, startSpace)
 		self.config = Config(game=self, grid=self.grid)
 		self.grid.loadMap(self.config.game1)
-		print(self.grid.grid)
 	def start(self):
 		print("You find yourself in an empty room, what would you like to do? ")
 		loop = True
@@ -297,6 +302,8 @@ class Game():
 			if word in commandDict:
 				commandDict = commandDict[word]
 
+			if isinstance(commandDict, str):
+				print(commandDict)
 			if isinstance(commandDict, types.MethodType):
 				paramObj = Param(args=commandList[i:]) 
 				if commandDict( param = paramObj ) == False:
@@ -322,6 +329,9 @@ class Game():
 		return True
 
 	def exitGame(self, param):
+		for option in param.args:
+			if option == "f":
+				return False
 		if input("Are you sure? There is currently no save feature. ")[:1].lower() == "y":
 	 		return False
 			
