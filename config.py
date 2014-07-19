@@ -28,7 +28,7 @@ class Config:
 				"west":self.grid.incrementYPosDown,  #y-down
 				"up":self.grid.incrementZPosUp,      #z-up
 				"down":self.grid.incrementZPosDown,   #z-down
-				"help":"Wll this is an unhelful help message",
+				"help":"Well this is an unhelful help message",
 				"onFail":{
 					"message":"You cant move in that direction",
 				},
@@ -36,8 +36,7 @@ class Config:
 
 		self.globalActionMap = {
 			"sudo":{
-				"ls":"",
-				"rm":"",
+				"rm":"Nice Try",
 				"system":"",
 				"teleport":self.grid.transport #More descrption in function
 			},

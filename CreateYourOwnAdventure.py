@@ -223,7 +223,7 @@ class Grid:
 			spaceObject = Space("mountan")
 		
 		if verbose:
-			print("You have wondered into a brand new space")
+			print("You have wandered into a brand new space")
 
 		self.grid[x][y][z] = spaceObject
 
@@ -257,12 +257,27 @@ class Grid:
 
 	#Accepts arguments as x:coord, y:coord, or z:coor
 	def transport(self, param):
+		backup = self.currentLocation.copy()
+		firstRun = True
 		for opt in param.args:
+			if firstRun:
+				firstRun = False
+				continue
 			opt = opt.split(":")
-			self.currentLocation[opt[0]] = opt[1]
+			if opt[0].lower() in ["x","y","z"]:
+				self.currentLocation[opt[0].lower()] = int(opt[1])
+			else:
+				print("stop spouting jiborish scotty")
 
-		if checkBounds():
-			
+		if not self.checkBounds():
+			self.currentLocation = backup
+			print("Dont try anything funny")
+
+		x = self.currentLocation["x"]
+		y = self.currentLocation["y"]
+		z = self.currentLocation["z"]
+
+		self.insertAtPostition(x,y,z)
 
 class Param():
 	def __init__(self, args=None):
@@ -304,6 +319,7 @@ class Game():
 
 			if isinstance(commandDict, str):
 				print(commandDict)
+				return True
 			if isinstance(commandDict, types.MethodType):
 				paramObj = Param(args=commandList[i:]) 
 				if commandDict( param = paramObj ) == False:
