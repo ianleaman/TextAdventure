@@ -34,6 +34,10 @@ class Config:
 				},
 			}
 
+		itemConfig = {
+
+		}
+
 		self.globalActionMap = {
 			"sudo":{
 				"rm":"Nice Try",
@@ -47,14 +51,26 @@ class Config:
 	
 
 		self.mainActionMap ={
+			"pick":{
+				"up":{
+					"items":game.pickUpItems
+				}
+			},
+			"list":{
+				"items":game.listItems
+			},
 			"move":moveConfig,
 			"go":moveConfig,
 			"travel":moveConfig,
 			"describe":describeConfig,
+			"attack":{
+				"mobs":game.attackMobs,
+			},
 			"onFail":{
 				"message":"No I Will Not", 
 				"function":None,
 			}
+
 		}
 
 		self.fightCommandDict = {
